@@ -3,9 +3,26 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+		<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+		<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 		<title>After Lessons</title>
 	</head>
-	<body>
-		<h1>Welcome to After Lessons App!</h1>
+	<body class="flex items-center justify-center h-[100vh]">
+		<div id="container">
+			<h1 class="text-3xl font-bold text-blue-600">{{ message }}</h1>
+		</div>
+
+		<script>
+			const { createApp } = Vue;
+
+			const app = createApp({
+				data: () => {
+					return { message: "Welcome to After Lessons App!" };
+				},
+			});
+
+			app.mount("#container");
+		</script>
 	</body>
 </html>
