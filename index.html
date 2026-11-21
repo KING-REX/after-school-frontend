@@ -11,6 +11,17 @@
 	<body class="flex items-center justify-center h-[100vh]">
 		<div id="container">
 			<h1 class="text-3xl font-bold text-blue-600">{{ message }}</h1>
+
+			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl bg-yellow-200">
+				<div
+					v-for="i in 4"
+					class="lesson relative top-0 flex flex-col rounded-xl overflow-hidden bg-blue-700 transition-[top] duration-300 ease-in-out cursor-pointer hover:-top-2">
+					<div class="top px-10 py-10 bg-cyan-500">
+						<div class="image w-50 h-50 border rounded-sm border-black"></div>
+					</div>
+					<div class="bottom h-75 bg-purple-700"></div>
+				</div>
+			</div>
 		</div>
 
 		<script>
@@ -18,7 +29,7 @@
 
 			const app = createApp({
 				data: () => {
-					return { message: "Welcome to After Lessons App!" };
+					return { message: "Welcome to After Lessons App!", lessons: [0, 1, 2, 3, 4, 5, 6, 7] };
 				},
 			});
 
