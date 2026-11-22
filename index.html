@@ -12,9 +12,28 @@
 		<div id="container" class="flex flex-col gap-y-10 w-[80vw]">
 			<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
 
+			<div class="searchbar relative flex items-center gap-1">
+				<label for="search-input" class="absolute left-5 top-1/2 -translate-y-1/2">
+					<i class="fa fa-search fa-lg"></i>
+				</label>
+				<input
+					type="text"
+					name="search"
+					v-model="searchQuery"
+					id="search-input"
+					placeholder="Search for lessons..."
+					@input="submitSearch"
+					class="search-input w-full h-full px-12 py-4 border-2 border-black outline-blue-600 rounded-4xl focus:outline-2" />
+				<button
+					class="clear-search absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer transition-color duration-300 hover:text-gray-500"
+					@click="clearSearch">
+					<i class="fa fa-times-circle fa-lg"></i>
+				</button>
+			</div>
+
 			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl bg-yellow-200">
 				<div
-					v-for="lesson in lessons"
+					v-for="lesson in modifiedLessons"
 					class="lesson group relative top-0 flex flex-col w-fit bg-blue-700 rounded-xl overflow-hidden transition-[top] duration-300 ease-in-out hover:-top-0">
 					<div class="top bg-cyan-500 h-full">
 						<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
@@ -45,7 +64,7 @@
 
 			const app = createApp({
 				data() {
-					return { message: "Welcome to After Lessons App!", lessons: [] };
+					return { message: "Welcome to After Lessons App!", lessons: [], modifiedLessons: [], searchQuery: "" };
 				},
 				computed: {},
 				methods: {
@@ -57,8 +76,32 @@
 							// console.log(lesson);
 							return { ...lesson, image: { ...lesson.image, url: BASE_URL + lesson.image.url } };
 						});
+						this.modifiedLessons = this.lessons;
 						// console.log("Lessons:");
 						// console.log(this.lessons);
+					},
+					submitSearch() {
+						console.log("Search query", this.searchQuery);
+						if (!this.searchQuery) {
+							this.modifiedLessons = this.lessons;
+							return;
+						}
+						console.log("Calling submitSearch with query param:", this.searchQuery);
+						// TODO: Transform this to a backend function
+						const filteredLessons = this.lessons.filter((lesson) => {
+							const existsInSubject = lesson.subject.includes(this.searchQuery);
+							const existsInLocation = lesson.location.includes(this.searchQuery);
+							const existsInPrice = new String(lesson.price).includes(this.searchQuery);
+							const existsInSlotsAvailable = new String(lesson.slots_available).includes(this.searchQuery);
+
+							return existsInSubject || existsInLocation || existsInPrice || existsInSlotsAvailable;
+						});
+
+						this.modifiedLessons = filteredLessons;
+					},
+					clearSearch() {
+						this.searchQuery = "";
+						this.submitSearch();
 					},
 				},
 				created() {
