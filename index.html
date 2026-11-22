@@ -12,14 +12,29 @@
 		<div id="container" class="flex flex-col gap-y-10 w-[80vw]">
 			<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
 
-			<div class="lessons-container grid grid-cols-4 space-between rounded-xl bg-yellow-200">
+			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl bg-yellow-200">
 				<div
 					v-for="lesson in lessons"
-					class="lesson relative top-0 flex flex-col w-fit bg-blue-700 rounded-xl overflow-hidden transition-[top] duration-300 ease-in-out cursor-pointer hover:-top-2">
-					<div class="top px-10 py-10 bg-cyan-500">
-						<div class="image w-50 h-50 border rounded-sm border-black"></div>
+					class="lesson group relative top-0 flex flex-col w-fit bg-blue-700 rounded-xl overflow-hidden transition-[top] duration-300 ease-in-out hover:-top-0">
+					<div class="top bg-cyan-500 h-full">
+						<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
+							<img
+								:src="lesson.image.url"
+								:alt="lesson.image.alt"
+								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+						</figure>
 					</div>
-					<div class="bottom h-75 bg-purple-700"></div>
+					<div class="bottom relative flex flex-col gap-4 px-5 py-5 bg-purple-700">
+						<h1>{{ lesson.subject }}</h1>
+						<p>{{ lesson.location }}</p>
+						<p>${{ lesson.price }}</p>
+						<p>{{ lesson.slots_available }} slots left</p>
+						<button
+							class="absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-300 hover:border-sky-500 hover:bg-white hover:text-sky-500">
+							<i class="fa fa-cart-plus fa-lg"></i>
+						</button>
+						<!-- <p>{{ lesson.price }}</p> -->
+					</div>
 				</div>
 			</div>
 		</div>
@@ -37,7 +52,11 @@
 					async fetchLessons() {
 						const response = await fetch(BASE_URL + "/lessons", { method: "get" });
 						const fetchedLessons = await response.json();
-						this.lessons = fetchedLessons.slice(0, 4);
+						this.lessons = [fetchedLessons[0], fetchedLessons[4], fetchedLessons[8], fetchedLessons[9]].map((lesson) => {
+							// console.log("Printing lesson");
+							// console.log(lesson);
+							return { ...lesson, image: { ...lesson.image, url: BASE_URL + lesson.image.url } };
+						});
 						// console.log("Lessons:");
 						// console.log(this.lessons);
 					},
