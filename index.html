@@ -31,6 +31,25 @@
 				</button>
 			</div>
 
+			<div class="filter-container flex gap-3 justify-end">
+				<div v-if="sortBy && sortBy !== 'none'" class="chosen-filter flex items-center px-4 py-2 rounded-4xl bg-blue-200">
+					<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
+						<span class="absolute -top-1 left-0">×</span>
+					</button>
+					<span class="ml-2 text-blue-600">{{ formatSortBy }}</span>
+				</div>
+				<button class="filter px-4 py-2 bg-gray-200 rounded-sm cursor-pointer">
+					<i class="fa fa-sliders"></i>
+					<span class="ml-2">Filter</span>
+				</button>
+				<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
+					<span class="text-sm">
+						<i :class="'fa fa-sort-amount-' + sortDirection"></i>
+					</span>
+					<span class="ml-2">{{ sortDirection === 'asc' ? 'Ascending' : 'Descending' }}</span>
+				</button>
+			</div>
+
 			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl bg-yellow-200">
 				<div
 					v-for="lesson in modifiedLessons"
@@ -66,7 +85,15 @@
 
 			const app = createApp({
 				data() {
-					return { message: "Welcome to After Lessons App!", lessons: [], modifiedLessons: [], searchQuery: "", cart: [] };
+					return {
+						message: "Welcome to After Lessons App!",
+						lessons: [],
+						modifiedLessons: [],
+						searchQuery: "",
+						cart: [],
+						sortDirection: "asc",
+						sortBy: "subject",
+					};
 				},
 				computed: {},
 				methods: {
@@ -107,6 +134,10 @@
 						this.submitSearch();
 					},
 
+					clearFilter() {
+						this.sortBy = "none";
+					},
+
 					addToCart(lesson) {
 						this.cart.push(lesson.id);
 						//TODO: Convert to a backend function and then refetch
@@ -114,6 +145,23 @@
 							if (modifiedLesson.id !== lesson.id) return modifiedLesson;
 							return { ...modifiedLesson, slots_available: modifiedLesson.slots_available - 1 };
 						});
+					},
+
+					changeSortDirection() {
+						console.log("Sort direction before:", this.sortDirection);
+						if (this.sortDirection === "asc") {
+							this.sortDirection = "desc";
+						} else if (this.sortDirection === "desc") {
+							this.sortDirection = "asc";
+						} else {
+							throw new Error("Sort direction is currently invalid, so cannot be changed!");
+						}
+						console.log("Sort direction after:", this.sortDirection);
+					},
+				},
+				computed: {
+					formatSortBy() {
+						return new String(this.sortBy.charAt(0).toUpperCase() + this.sortBy.substring(1).toLowerCase());
 					},
 				},
 				created() {
