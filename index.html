@@ -36,11 +36,22 @@
 					<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
 						<span class="absolute -top-1 left-0">×</span>
 					</button>
-					<span class="ml-2 text-blue-600">{{ formatSortBy }}</span>
+					<span class="ml-2 text-blue-600">{{ formatSortBy(sortBy) }}</span>
 				</div>
-				<button class="filter px-4 py-2 bg-gray-200 rounded-sm cursor-pointer">
+				<button class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
 					<i class="fa fa-sliders"></i>
 					<span class="ml-2">Filter</span>
+					<div class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left">
+						<h3 class="mb-4 text-xl font-semibold">Filter By:</h3>
+						<ol>
+							<li
+								v-for="sortByOption of sortByOptions"
+								class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50"
+								:class="{'border-l-5 border-l-blue-400': filterIsSelected(sortByOption)}">
+								{{ formatSortBy(sortByOption) }}
+							</li>
+						</ol>
+					</div>
 				</button>
 				<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
 					<span class="text-sm">
@@ -93,6 +104,8 @@
 						cart: [],
 						sortDirection: "asc",
 						sortBy: "subject",
+						sortByOptions: ["subject", "location", "price", "slot_availability"],
+						showFilterDropdown: false,
 					};
 				},
 				computed: {},
@@ -109,6 +122,7 @@
 						// console.log("Lessons:");
 						// console.log(this.lessons);
 					},
+
 					submitSearch() {
 						console.log("Search query", this.searchQuery);
 						if (!this.searchQuery) {
@@ -138,6 +152,39 @@
 						this.sortBy = "none";
 					},
 
+					changeSortDirection() {
+						if (this.sortDirection === "asc") {
+							this.sortDirection = "desc";
+						} else if (this.sortDirection === "desc") {
+							this.sortDirection = "asc";
+						} else {
+							throw new Error("Sort direction is currently invalid, so cannot be changed!");
+						}
+					},
+
+					toggleFilterDropdown() {
+						this.showFilter = !this.showFilter;
+						console.log("Should show filter:", this.showFilter);
+					},
+
+					filterIsSelected(sortByOption) {
+						return sortByOption === this.sortBy;
+					},
+
+					formatSortBy(sortBy) {
+						console.log("Sort by before:", sortBy);
+						const toTitleCase = (str) => {
+							return new String(str.charAt(0).toUpperCase() + str.substring(1).toLowerCase());
+						};
+						const sortByOption = sortBy ?? this.sortBy;
+						const sortByModified = sortByOption
+							.split("_")
+							.map((word) => toTitleCase(word))
+							.join(" ");
+						console.log("Sort by after:", sortByModified);
+						return sortByModified;
+					},
+
 					addToCart(lesson) {
 						this.cart.push(lesson.id);
 						//TODO: Convert to a backend function and then refetch
@@ -146,23 +193,11 @@
 							return { ...modifiedLesson, slots_available: modifiedLesson.slots_available - 1 };
 						});
 					},
-
-					changeSortDirection() {
-						console.log("Sort direction before:", this.sortDirection);
-						if (this.sortDirection === "asc") {
-							this.sortDirection = "desc";
-						} else if (this.sortDirection === "desc") {
-							this.sortDirection = "asc";
-						} else {
-							throw new Error("Sort direction is currently invalid, so cannot be changed!");
-						}
-						console.log("Sort direction after:", this.sortDirection);
-					},
 				},
 				computed: {
-					formatSortBy() {
-						return new String(this.sortBy.charAt(0).toUpperCase() + this.sortBy.substring(1).toLowerCase());
-					},
+					// formatSortBy() {
+					// 	return new String(this.sortBy.charAt(0).toUpperCase() + this.sortBy.substring(1).toLowerCase());
+					// },
 				},
 				created() {
 					this.fetchLessons();
