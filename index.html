@@ -67,10 +67,10 @@
 				</button>
 			</div>
 
-			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl bg-yellow-200">
+			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl">
 				<div
 					v-for="lesson in displayedLessons"
-					class="lesson group relative top-0 flex flex-col w-fit bg-blue-700 rounded-xl overflow-hidden transition-[top] duration-300 ease-in-out hover:-top-0">
+					class="lesson group relative top-0 flex flex-col w-fit rounded-xl overflow-hidden shadow-lg/30 transition-[top] duration-300 ease-in-out hover:-top-0">
 					<div class="top bg-cyan-500 h-full">
 						<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
 							<img
@@ -79,13 +79,13 @@
 								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
 						</figure>
 					</div>
-					<div class="bottom relative flex flex-col gap-4 px-5 py-5 bg-purple-700">
-						<h1>{{ lesson.subject }}</h1>
+					<div class="bottom relative flex flex-col gap-2 px-5 py-5">
+						<h1 class="text-xl font-semibold">{{ lesson.subject }}</h1>
 						<p>{{ lesson.location }}</p>
 						<p>${{ lesson.price }}</p>
 						<p>{{ lesson.slots_available }} slots left</p>
 						<button
-							class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-300 hover:border-sky-500 hover:bg-white hover:text-sky-500"
+							class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-300 hover:border-blue-600 hover:bg-blue-600 hover:text-white"
 							:disabled="lesson.slots_available <= 0"
 							@click="addToCart(lesson)">
 							<i class="fa fa-cart-plus fa-lg"></i>
@@ -111,7 +111,7 @@
 						searchQuery: "",
 						cart: [],
 						sortDirection: "asc",
-						sortBy: "subject",
+						sortBy: "none",
 						sortByOptions: ["subject", "location", "price", "slot_availability"],
 						shouldShowFilterDropdown: false,
 					};
