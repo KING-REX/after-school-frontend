@@ -8,7 +8,7 @@
 		<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 		<title>After Lessons</title>
 	</head>
-	<body class="flex items-center justify-center h-[100vh]">
+	<body class="flex items-center justify-center h-[100vh]" id="body">
 		<div id="container" class="flex flex-col gap-y-10 w-[80vw]">
 			<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
 
@@ -31,28 +31,34 @@
 				</button>
 			</div>
 
-			<div class="filter-container flex gap-3 justify-end">
+			<div class="filter-section flex gap-3 justify-end">
 				<div v-if="sortBy && sortBy !== 'none'" class="chosen-filter flex items-center px-4 py-2 rounded-4xl bg-blue-200">
 					<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
 						<span class="absolute -top-1 left-0">×</span>
 					</button>
 					<span class="ml-2 text-blue-600">{{ formatSortBy(sortBy) }}</span>
 				</div>
-				<button class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
-					<i class="fa fa-sliders"></i>
-					<span class="ml-2">Filter</span>
-					<div class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left">
+				<div class="filter-container relative">
+					<button id="filter-btn" class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
+						<i class="fa fa-sliders"></i>
+						<span class="ml-2">Filter</span>
+					</button>
+					<div
+						id="filter-dropdown"
+						class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left"
+						:class="{'hidden': !shouldShowFilterDropdown}">
 						<h3 class="mb-4 text-xl font-semibold">Filter By:</h3>
 						<ol>
 							<li
 								v-for="sortByOption of sortByOptions"
-								class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50"
-								:class="{'border-l-5 border-l-blue-400': filterIsSelected(sortByOption)}">
+								class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50 border-l-7 cursor-pointer"
+								:class="{'border-l-blue-400': filterIsSelected(sortByOption), 'border-l-transparent': !filterIsSelected(sortByOption)}"
+								@click="() => selectFilter(sortByOption)">
 								{{ formatSortBy(sortByOption) }}
 							</li>
 						</ol>
 					</div>
-				</button>
+				</div>
 				<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
 					<span class="text-sm">
 						<i :class="'fa fa-sort-amount-' + sortDirection"></i>
@@ -63,7 +69,7 @@
 
 			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl bg-yellow-200">
 				<div
-					v-for="lesson in modifiedLessons"
+					v-for="lesson in displayedLessons"
 					class="lesson group relative top-0 flex flex-col w-fit bg-blue-700 rounded-xl overflow-hidden transition-[top] duration-300 ease-in-out hover:-top-0">
 					<div class="top bg-cyan-500 h-full">
 						<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
@@ -99,13 +105,13 @@
 					return {
 						message: "Welcome to After Lessons App!",
 						lessons: [],
-						modifiedLessons: [],
+						displayedLessons: [],
 						searchQuery: "",
 						cart: [],
 						sortDirection: "asc",
 						sortBy: "subject",
 						sortByOptions: ["subject", "location", "price", "slot_availability"],
-						showFilterDropdown: false,
+						shouldShowFilterDropdown: false,
 					};
 				},
 				computed: {},
@@ -118,18 +124,18 @@
 							// console.log(lesson);
 							return { ...lesson, image: { ...lesson.image, url: BASE_URL + lesson.image.url } };
 						});
-						this.modifiedLessons = this.lessons;
+						this.displayedLessons = this.lessons;
 						// console.log("Lessons:");
 						// console.log(this.lessons);
 					},
 
 					submitSearch() {
-						console.log("Search query", this.searchQuery);
+						// console.log("Search query", this.searchQuery);
 						if (!this.searchQuery) {
-							this.modifiedLessons = this.lessons;
+							this.displayedLessons = this.lessons;
 							return;
 						}
-						console.log("Calling submitSearch with query param:", this.searchQuery);
+						// console.log("Calling submitSearch with query param:", this.searchQuery);
 						// TODO: Transform this to a backend function
 						const filteredLessons = this.lessons.filter((lesson) => {
 							const existsInSubject = lesson.subject.includes(this.searchQuery);
@@ -140,7 +146,7 @@
 							return existsInSubject || existsInLocation || existsInPrice || existsInSlotsAvailable;
 						});
 
-						this.modifiedLessons = filteredLessons;
+						this.displayedLessons = filteredLessons;
 					},
 
 					clearSearch() {
@@ -163,16 +169,75 @@
 					},
 
 					toggleFilterDropdown() {
-						this.showFilter = !this.showFilter;
-						console.log("Should show filter:", this.showFilter);
+						if (this.shouldShowFilterDropdown) this.hideFilterDropdown();
+						else this.showFilterDropdown();
+					},
+
+					showFilterDropdown() {
+						// console.log("Printing from showFilterDropdown...");
+						this.shouldShowFilterDropdown = true;
+						document.body.addEventListener("click", this.filterEventListener);
+					},
+
+					hideFilterDropdown() {
+						// console.log("Printing from hideFilterDropdown...");
+						this.shouldShowFilterDropdown = false;
+						document.body.removeEventListener("click", this.filterEventListener);
+					},
+
+					filterEventListener(event) {
+						// console.log("In filter event listener...");
+						const isDescendant = (parent, child) => {
+							var node = child.parentNode;
+							while (node != null) {
+								if (node === parent) return true;
+								node = node.parentNode;
+							}
+							return false;
+						};
+
+						const target = event.target;
+						// console.log(target);
+						// console.log(target.parentNode);
+						const filterBtn = document.getElementById("filter-btn");
+						const filterDropdown = document.getElementById("filter-dropdown");
+						// console.log(filterDropdown);
+						// console.log("Filter dropdown is equal to target:", target === filterDropdown);
+						// console.log("Filter dropdown has target:", isDescendant(filterDropdown, target));
+						// console.log("Filter dropdown has target 2:", filterDropdown.contains(target));
+
+						const belongsToFilterDropdown = filterDropdown === target || isDescendant(filterDropdown, target);
+						const belongsToFilterButton = filterBtn === target || isDescendant(filterBtn, target);
+
+						if (belongsToFilterButton) return;
+
+						if (!belongsToFilterDropdown) {
+							this.hideFilterDropdown();
+						}
 					},
 
 					filterIsSelected(sortByOption) {
+						// console.log("Sort by option:", sortByOption);
+						// console.log("Sort by:", this.sortBy);
+						// console.log();
 						return sortByOption === this.sortBy;
 					},
 
+					selectFilter(sortByOption) {
+						console.log("Sort by option:", sortByOption);
+						console.log("Sort by:", this.sortBy);
+						console.log("Sort by option == sortby:", sortByOption === this.sortBy);
+						if (sortByOption === this.sortBy) {
+							this.clearFilter();
+							console.log("Sort by after clearing filter:", this.sortBy);
+							return;
+						}
+						this.sortBy = sortByOption;
+						this.sortLessons();
+					},
+
 					formatSortBy(sortBy) {
-						console.log("Sort by before:", sortBy);
+						// console.log("Sort by before:", sortBy);
 						const toTitleCase = (str) => {
 							return new String(str.charAt(0).toUpperCase() + str.substring(1).toLowerCase());
 						};
@@ -181,14 +246,14 @@
 							.split("_")
 							.map((word) => toTitleCase(word))
 							.join(" ");
-						console.log("Sort by after:", sortByModified);
+						// console.log("Sort by after:", sortByModified);
 						return sortByModified;
 					},
 
 					addToCart(lesson) {
 						this.cart.push(lesson.id);
 						//TODO: Convert to a backend function and then refetch
-						this.modifiedLessons = this.modifiedLessons.map((modifiedLesson) => {
+						this.displayedLessons = this.displayedLessons.map((modifiedLesson) => {
 							if (modifiedLesson.id !== lesson.id) return modifiedLesson;
 							return { ...modifiedLesson, slots_available: modifiedLesson.slots_available - 1 };
 						});
