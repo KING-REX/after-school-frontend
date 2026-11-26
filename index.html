@@ -136,22 +136,41 @@
 					submitSearch() {
 						// console.log("Calling submitSearch with query param:", this.searchQuery);
 						if (!this.searchQuery) {
-							this.displayedLessons = [...this.sortedLessons];
+							// this.displayedLessons = [...this.sortedLessons];
+							this.searchedLessons = [...this.lessons];
+							this.sortLessons();
 							return;
 						}
+
 						// TODO: Transform this to a backend function
-						// console.log("Search query", this.searchQuery);
-						const lessons = [...this.displayedLessons];
+						console.log("Search query:", this.searchQuery);
+						const lessons = [...this.lessons];
+						// console.log("Original lessons array we're filtering from:");
+						// console.log(lessons);
 						const filteredLessons = lessons.filter((lesson) => {
-							const existsInSubject = lesson.subject.includes(this.searchQuery);
-							const existsInLocation = lesson.location.includes(this.searchQuery);
-							const existsInPrice = new String(lesson.price).includes(this.searchQuery);
-							const existsInSlotsAvailable = new String(lesson.slots_available).includes(this.searchQuery);
+							const existsInSubject = lesson.subject.toLowerCase().includes(this.searchQuery.toLowerCase());
+							const existsInLocation = lesson.location.toLowerCase().includes(this.searchQuery.toLowerCase());
+							const existsInPrice = new String(lesson.price).toLowerCase().includes(this.searchQuery.toLowerCase());
+							const existsInSlotsAvailable = new String(lesson.slots_available).toLowerCase().includes(this.searchQuery.toLowerCase());
+
+							// console.log("Testing lesson:");
+							// console.log(lesson);
+							// console.log(
+							// 	"Exists in subject:",
+							// 	existsInSubject,
+							// 	"| Exists in Location:",
+							// 	existsInLocation,
+							// 	"| Exists in Price:",
+							// 	existsInPrice,
+							// 	"| Exists in SA:",
+							// 	existsInSlotsAvailable,
+							// );
 
 							return existsInSubject || existsInLocation || existsInPrice || existsInSlotsAvailable;
 						});
-
+						this.searchedLessons = filteredLessons;
 						this.displayedLessons = filteredLessons;
+						this.sortLessons();
 					},
 
 					sortLessons() {
@@ -160,12 +179,14 @@
 
 						if (filterOption === "none") {
 							// console.log("Filter option is none...");
+							this.sortedLessons = [...this.searchedLessons];
 							this.displayedLessons = [...this.searchedLessons];
+							// this.submitSearch();
 							// console.log(this.displayedLessons);
 							return;
 						}
 
-						const lessons = [...this.displayedLessons]; //so we can sort already searched lessons
+						const lessons = [...this.searchedLessons]; //so we can sort already searched lessons
 						const direction = this.sortDirection; //possible values: "asc" | "desc"
 						const sortedLessons = lessons.sort((lessonA, lessonB) => {
 							let isLess, isGreater, isEqual;
@@ -185,6 +206,7 @@
 							}
 						});
 
+						this.sortedLessons = sortedLessons;
 						this.displayedLessons = sortedLessons;
 					},
 
