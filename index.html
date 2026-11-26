@@ -10,7 +10,24 @@
 	</head>
 	<body class="flex items-center justify-center h-[100vh]" id="body">
 		<div id="container" class="flex flex-col gap-y-10 w-[80vw]">
-			<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
+			<div class="flex items-center justify-between">
+				<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
+				<button
+					id="view-cart"
+					class="px-4 py-2 bg-blue-600 text-white text-lg rounded-sm cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+					:disabled="cart.length < 1">
+					<span class="mr-2">View Cart</span>
+					<span class="relative">
+						<i class="fa fa-shopping-cart fa-lg"></i>
+						<span
+							v-if="cart.length"
+							id="badge"
+							class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/4 w-4.5 h-4.5 text-[0.675rem] rounded-full bg-red-500">
+							{{ cart.length }}
+						</span>
+					</span>
+				</button>
+			</div>
 
 			<div class="searchbar relative flex items-center gap-1">
 				<label for="search-input" class="absolute left-5 top-1/2 -translate-y-1/2">
@@ -85,7 +102,7 @@
 						<p>${{ lesson.price }}</p>
 						<p>{{ lesson.slots_available }} slots left</p>
 						<button
-							class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-300 hover:border-blue-600 hover:bg-blue-600 hover:text-white"
+							class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-150 hover:border-blue-600 hover:bg-blue-600 hover:text-white disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
 							:disabled="lesson.slots_available <= 0"
 							@click="addToCart(lesson)">
 							<i class="fa fa-cart-plus fa-lg"></i>
@@ -317,10 +334,13 @@
 					addToCart(lesson) {
 						this.cart.push(lesson.id);
 						//TODO: Convert to a backend function and then refetch
-						this.displayedLessons = this.displayedLessons.map((modifiedLesson) => {
+						const modifyLessonFunction = (modifiedLesson) => {
 							if (modifiedLesson.id !== lesson.id) return modifiedLesson;
 							return { ...modifiedLesson, slots_available: modifiedLesson.slots_available - 1 };
-						});
+						};
+						this.lessons = this.lessons.map(modifyLessonFunction);
+						this.displayedLessons = this.displayedLessons.map(modifyLessonFunction);
+						this.searchedLessons = this.searchedLessons.map(modifyLessonFunction);
 					},
 				},
 				computed: {
