@@ -106,6 +106,8 @@
 						message: "Welcome to After Lessons App!",
 						lessons: [],
 						displayedLessons: [],
+						sortedLessons: [],
+						searchedLessons: [],
 						searchQuery: "",
 						cart: [],
 						sortDirection: "asc",
@@ -124,20 +126,23 @@
 							// console.log(lesson);
 							return { ...lesson, image: { ...lesson.image, url: BASE_URL + lesson.image.url } };
 						});
-						this.displayedLessons = this.lessons;
+						this.displayedLessons = [...this.lessons];
+						this.sortedLessons = [...this.lessons];
+						this.searchedLessons = [...this.lessons];
 						// console.log("Lessons:");
 						// console.log(this.lessons);
 					},
 
 					submitSearch() {
-						// console.log("Search query", this.searchQuery);
+						// console.log("Calling submitSearch with query param:", this.searchQuery);
 						if (!this.searchQuery) {
-							this.displayedLessons = this.lessons;
+							this.displayedLessons = [...this.sortedLessons];
 							return;
 						}
-						// console.log("Calling submitSearch with query param:", this.searchQuery);
 						// TODO: Transform this to a backend function
-						const filteredLessons = this.lessons.filter((lesson) => {
+						// console.log("Search query", this.searchQuery);
+						const lessons = [...this.displayedLessons];
+						const filteredLessons = lessons.filter((lesson) => {
 							const existsInSubject = lesson.subject.includes(this.searchQuery);
 							const existsInLocation = lesson.location.includes(this.searchQuery);
 							const existsInPrice = new String(lesson.price).includes(this.searchQuery);
@@ -149,13 +154,49 @@
 						this.displayedLessons = filteredLessons;
 					},
 
+					sortLessons() {
+						// console.log("Within sort lessons method...");
+						const filterOption = this.sortBy;
+
+						if (filterOption === "none") {
+							// console.log("Filter option is none...");
+							this.displayedLessons = [...this.searchedLessons];
+							// console.log(this.displayedLessons);
+							return;
+						}
+
+						const lessons = [...this.displayedLessons]; //so we can sort already searched lessons
+						const direction = this.sortDirection; //possible values: "asc" | "desc"
+						const sortedLessons = lessons.sort((lessonA, lessonB) => {
+							let isLess, isGreater, isEqual;
+
+							if (lessonA[filterOption] < lessonB[filterOption]) isLess = true;
+							else if (lessonA[filterOption] > lessonB[filterOption]) isGreater = true;
+							else isEqual = true;
+
+							if (direction === "asc") {
+								if (isLess) return -1;
+								else if (isGreater) return 1;
+								else if (isEqual) return 0;
+							} else if (direction === "desc") {
+								if (isLess) return 1;
+								else if (isGreater) return -1;
+								else if (isEqual) return 0;
+							}
+						});
+
+						this.displayedLessons = sortedLessons;
+					},
+
 					clearSearch() {
 						this.searchQuery = "";
 						this.submitSearch();
 					},
 
 					clearFilter() {
+						// console.log("Clearing filter");
 						this.sortBy = "none";
+						this.sortLessons();
 					},
 
 					changeSortDirection() {
@@ -166,6 +207,7 @@
 						} else {
 							throw new Error("Sort direction is currently invalid, so cannot be changed!");
 						}
+						this.sortLessons();
 					},
 
 					toggleFilterDropdown() {
@@ -224,12 +266,12 @@
 					},
 
 					selectFilter(sortByOption) {
-						console.log("Sort by option:", sortByOption);
-						console.log("Sort by:", this.sortBy);
-						console.log("Sort by option == sortby:", sortByOption === this.sortBy);
+						// console.log("Sort by option:", sortByOption);
+						// console.log("Sort by:", this.sortBy);
+						// console.log("Sort by option == sortby:", sortByOption === this.sortBy);
 						if (sortByOption === this.sortBy) {
 							this.clearFilter();
-							console.log("Sort by after clearing filter:", this.sortBy);
+							// console.log("Sort by after clearing filter:", this.sortBy);
 							return;
 						}
 						this.sortBy = sortByOption;
