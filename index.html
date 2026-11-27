@@ -14,8 +14,9 @@
 				<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
 				<button
 					id="view-cart"
-					class="px-4 py-2 bg-blue-600 text-white text-lg rounded-sm cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
-					:disabled="cart.length < 1">
+					class="px-4 py-2 bg-blue-600 text-white text-lg rounded-lg cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+					:disabled="cart.length < 1"
+					@click="toggleCheckoutPage">
 					<span class="mr-2">View Cart</span>
 					<span class="relative">
 						<i class="fa fa-shopping-cart fa-lg"></i>
@@ -29,88 +30,125 @@
 				</button>
 			</div>
 
-			<div class="searchbar relative flex items-center gap-1">
-				<label for="search-input" class="absolute left-5 top-1/2 -translate-y-1/2">
-					<i class="fa fa-search fa-lg"></i>
-				</label>
-				<input
-					type="text"
-					name="search"
-					v-model="searchQuery"
-					id="search-input"
-					placeholder="Search for lessons..."
-					@input="submitSearch"
-					class="search-input w-full h-full px-12 py-4 border-2 border-black outline-blue-600 rounded-4xl focus:outline-2" />
-				<button
-					class="clear-search absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer transition-color duration-300 hover:text-gray-500"
-					@click="clearSearch">
-					<i class="fa fa-times-circle fa-lg"></i>
-				</button>
-			</div>
-
-			<div class="filter-section flex gap-3 justify-end">
-				<div v-if="sortBy && sortBy !== 'none'" class="chosen-filter flex items-center px-4 py-2 rounded-4xl bg-blue-200">
-					<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
-						<span class="absolute -top-1 left-0">×</span>
+			<main v-if="!showCheckoutPage" class="flex flex-col gap-y-8 w-[80vw]">
+				<div class="searchbar relative flex items-center gap-1">
+					<label for="search-input" class="absolute left-5 top-1/2 -translate-y-1/2">
+						<i class="fa fa-search fa-lg"></i>
+					</label>
+					<input
+						type="text"
+						name="search"
+						v-model="searchQuery"
+						id="search-input"
+						placeholder="Search for lessons..."
+						@input="submitSearch"
+						class="search-input w-full h-full px-12 py-4 border-2 border-black outline-blue-600 rounded-4xl focus:outline-2" />
+					<button
+						class="clear-search absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer transition-color duration-300 hover:text-gray-500"
+						@click="clearSearch">
+						<i class="fa fa-times-circle fa-lg"></i>
 					</button>
-					<span class="ml-2 text-blue-600">{{ formatSortBy(sortBy) }}</span>
 				</div>
-				<div class="filter-container relative">
-					<button id="filter-btn" class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
-						<i class="fa fa-sliders"></i>
-						<span class="ml-2">Filter</span>
-					</button>
-					<div
-						id="filter-dropdown"
-						class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left"
-						:class="{'hidden': !shouldShowFilterDropdown}">
-						<h3 class="mb-4 text-xl font-semibold">Filter By:</h3>
-						<ol>
-							<li
-								v-for="sortByOption of sortByOptions"
-								class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50 border-l-7 cursor-pointer"
-								:class="{'border-l-blue-400': filterIsSelected(sortByOption), 'border-l-transparent': !filterIsSelected(sortByOption)}"
-								@click="() => selectFilter(sortByOption)">
-								{{ formatSortBy(sortByOption) }}
-							</li>
-						</ol>
-					</div>
-				</div>
-				<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
-					<span class="text-sm">
-						<i :class="'fa fa-sort-amount-' + sortDirection"></i>
-					</span>
-					<span class="ml-2">{{ sortDirection === 'asc' ? 'Ascending' : 'Descending' }}</span>
-				</button>
-			</div>
 
-			<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl">
-				<div
-					v-for="lesson in displayedLessons"
-					class="lesson group relative top-0 flex flex-col w-fit rounded-xl overflow-hidden shadow-lg/30 transition-[top] duration-300 ease-in-out hover:-top-0">
-					<div class="top bg-cyan-500 h-full">
-						<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
-							<img
-								:src="lesson.image.url"
-								:alt="lesson.image.alt"
-								class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-						</figure>
-					</div>
-					<div class="bottom relative flex flex-col gap-2 px-5 py-5">
-						<h1 class="text-xl font-semibold">{{ lesson.subject }}</h1>
-						<p>{{ lesson.location }}</p>
-						<p>${{ lesson.price }}</p>
-						<p>{{ lesson.slots_available }} slots left</p>
-						<button
-							class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-150 hover:border-blue-600 hover:bg-blue-600 hover:text-white disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
-							:disabled="lesson.slots_available <= 0"
-							@click="addToCart(lesson)">
-							<i class="fa fa-cart-plus fa-lg"></i>
+				<div class="filter-section flex gap-3 justify-end">
+					<div v-if="sortBy && sortBy !== 'none'" class="chosen-filter flex items-center px-4 py-2 rounded-4xl bg-blue-200">
+						<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
+							<span class="absolute -top-1 left-0">×</span>
 						</button>
-						<!-- <p>{{ lesson.price }}</p> -->
+						<span class="ml-2 text-blue-600">{{ formatSortBy(sortBy) }}</span>
+					</div>
+					<div class="filter-container relative">
+						<button id="filter-btn" class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
+							<i class="fa fa-sliders"></i>
+							<span class="ml-2">Filter</span>
+						</button>
+						<div
+							id="filter-dropdown"
+							class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left"
+							:class="{'hidden': !shouldShowFilterDropdown}">
+							<h3 class="mb-4 text-xl font-semibold">Filter By:</h3>
+							<ol>
+								<li
+									v-for="sortByOption of sortByOptions"
+									class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50 border-l-7 cursor-pointer"
+									:class="{'border-l-blue-400': filterIsSelected(sortByOption), 'border-l-transparent': !filterIsSelected(sortByOption)}"
+									@click="() => selectFilter(sortByOption)">
+									{{ formatSortBy(sortByOption) }}
+								</li>
+							</ol>
+						</div>
+					</div>
+					<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
+						<span class="text-sm">
+							<i :class="'fa fa-sort-amount-' + sortDirection"></i>
+						</span>
+						<span class="ml-2">{{ sortDirection === 'asc' ? 'Ascending' : 'Descending' }}</span>
+					</button>
+				</div>
+
+				<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl">
+					<div
+						v-for="lesson in displayedLessons"
+						class="lesson group relative top-0 flex flex-col w-fit rounded-xl overflow-hidden shadow-lg/30 transition-[top] duration-300 ease-in-out hover:-top-0">
+						<div class="top bg-cyan-500 h-full">
+							<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
+								<img
+									:src="lesson.image.url"
+									:alt="lesson.image.alt"
+									class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+							</figure>
+						</div>
+						<div class="bottom relative flex flex-col gap-2 px-5 py-5">
+							<h1 class="text-xl font-semibold">{{ lesson.subject }}</h1>
+							<p>{{ lesson.location }}</p>
+							<p>${{ lesson.price }}</p>
+							<p>{{ lesson.slots_available }} slots left</p>
+							<button
+								class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-150 hover:border-blue-600 hover:bg-blue-600 hover:text-white disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+								:disabled="lesson.slots_available <= 0"
+								@click="addToCart(lesson)">
+								<i class="fa fa-cart-plus fa-lg"></i>
+							</button>
+							<!-- <p>{{ lesson.price }}</p> -->
+						</div>
 					</div>
 				</div>
-			</div>
+			</main>
+
+			<aside v-else class="flex flex-col gap-y-8 w-[80vw]">
+				<h1 class="text-2xl font-semibold">Cart:</h1>
+
+				<form action="" id="checkout-form" class="px-8 pt-8 pb-10 rounded-xl shadow-md/50">
+					<h2 class="text-2xl font-semibold mb-12">Checkout</h2>
+					<div class="entry-container flex flex-col gap-y-6 px-6">
+						<div class="entry flex flex-col gap-y-1">
+							<label for="name-input" class="font-semibold text-sm">Name</label>
+							<input
+								id="name-input"
+								type="text"
+								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic"
+								placeholder="Enter a valid name, e.g. John Doe" />
+						</div>
+						<div class="entry flex flex-col gap-y-1">
+							<label for="phone-input" class="font-semibold text-sm">Phone num</label>
+							<input
+								id="phone-input"
+								type="number"
+								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic"
+								placeholder="Enter a valid phone number, e.g. 50055115" />
+						</div>
+						<!-- <div class="entry flex flex-col gap-y-1">
+							<label for="" class="font-semibold text-sm"></label><input type="text" class="px-6 py-4 rounded-xl border-1 outline-2" />
+						</div>
+						<div class="entry flex flex-col gap-y-1">
+							<label for="" class="font-semibold text-sm"></label><input type="text" class="px-6 py-4 rounded-xl border-1 outline-2" />
+						</div> -->
+						<button class="px-4 py-2 w-fit bg-blue-600 rounded-lg text-white cursor-pointer hover:bg-blue-500" @click="checkoutCart">
+							Checkout
+						</button>
+					</div>
+				</form>
+			</aside>
 		</div>
 
 		<script>
@@ -131,9 +169,9 @@
 						sortBy: "none",
 						sortByOptions: ["subject", "location", "price", "slot_availability"],
 						shouldShowFilterDropdown: false,
+						showCheckoutPage: true,
 					};
 				},
-				computed: {},
 				methods: {
 					async fetchLessons() {
 						const response = await fetch(BASE_URL + "/lessons", { method: "get" });
@@ -341,6 +379,16 @@
 						this.lessons = this.lessons.map(modifyLessonFunction);
 						this.displayedLessons = this.displayedLessons.map(modifyLessonFunction);
 						this.searchedLessons = this.searchedLessons.map(modifyLessonFunction);
+					},
+
+					toggleCheckoutPage() {
+						this.showCheckoutPage = !this.showCheckoutPage;
+					},
+
+					checkoutCart() {
+						alert("Hahaha, checking out cart now...");
+						this.showCheckoutPage = false;
+						// TODO: Actually check out the cart (i.e. send requests to backend to create order, reduce slots, etc. and don't end with alerts lol)
 					},
 				},
 				computed: {
