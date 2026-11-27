@@ -118,6 +118,49 @@
 			<aside v-else class="flex flex-col gap-y-8 w-[80vw]">
 				<h1 class="text-2xl font-semibold">Cart:</h1>
 
+				<div id="cart" class="flex flex-col gap-y-6">
+					<div v-for="item in categorizedCartItems" id="cart-item" class="flex rounded-xl overflow-hidden shadow-sm/40">
+						<div class="left flex-1 min-w-0">
+							<figure class="image relative h-full w-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
+								<img
+									:src="item.image.url"
+									:alt="item.image.alt"
+									class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+							</figure>
+						</div>
+						<div class="right flex justify-between items-center px-4 py-2 w-9/10">
+							<div class="details flex flex-col">
+								<h1 class="font-semibold text-lg">{{ item.subject }}</h1>
+								<span>{{ item.location }}</span>
+								<span>${{ item.price }}</span>
+							</div>
+							<div class="action-container flex gap-8">
+								<div class="quantity-container flex gap-4">
+									<button
+										class="minus text-red-600 cursor-pointer hover:text-red-500 disabled:text-gray-400 disabled:cursor-default"
+										@click="removeFromCart(item)">
+										<!-- <span>−</span> -->
+										<i class="fa fa-minus-circle fa-2x"></i>
+									</button>
+									<div class="quantity py-2 w-30 text-center text-xl text-gray-700 rounded-lg bg-gray-300 border-1 border-dashed">
+										{{ item.quantity }}
+									</div>
+									<button
+										class="plus text-blue-600 cursor-pointer hover:text-blue-500 disabled:text-gray-400 disabled:cursor-default"
+										@click="addToCart(item)"
+										:disabled="!canAddToCart(item)">
+										<!-- <span>+</span> -->
+										<i class="fa fa-plus-circle fa-2x"></i>
+									</button>
+								</div>
+								<button class="trash text-gray-400 cursor-pointer duration-300 hover:text-gray-500" @click="removeAllFromCart(item)">
+									<i class="fa fa-trash fa-2x"></i>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<form action="" id="checkout-form" class="px-8 pt-8 pb-10 rounded-xl shadow-md/50">
 					<h2 class="text-2xl font-semibold mb-12">Checkout</h2>
 					<div class="entry-container flex flex-col gap-y-6 px-6">
@@ -130,7 +173,7 @@
 								placeholder="Enter a valid name, e.g. John Doe" />
 						</div>
 						<div class="entry flex flex-col gap-y-1">
-							<label for="phone-input" class="font-semibold text-sm">Phone num</label>
+							<label for="phone-input" class="font-semibold text-sm">Phone number</label>
 							<input
 								id="phone-input"
 								type="number"
@@ -169,7 +212,7 @@
 						sortBy: "none",
 						sortByOptions: ["subject", "location", "price", "slot_availability"],
 						shouldShowFilterDropdown: false,
-						showCheckoutPage: true,
+						showCheckoutPage: false,
 					};
 				},
 				methods: {
@@ -369,8 +412,18 @@
 						return sortByModified;
 					},
 
+					removeItemFromLessons(item) {},
+
+					canAddToCart(item) {
+						const categorizedItem = this.categorizedCartItems.find((cartItem) => cartItem.id === item.id);
+						if (categorizedItem) {
+							return categorizedItem.quantity < categorizedItem.slots_available;
+						}
+						return false;
+					},
+
 					addToCart(lesson) {
-						this.cart.push(lesson.id);
+						this.cart.push(lesson);
 						//TODO: Convert to a backend function and then refetch
 						const modifyLessonFunction = (modifiedLesson) => {
 							if (modifiedLesson.id !== lesson.id) return modifiedLesson;
@@ -381,8 +434,41 @@
 						this.searchedLessons = this.searchedLessons.map(modifyLessonFunction);
 					},
 
-					toggleCheckoutPage() {
-						this.showCheckoutPage = !this.showCheckoutPage;
+					removeFromCart(lesson) {
+						// Remove one occurrence of the item
+						const modifyLessonFunction = (modifiedLesson) => {
+							if (modifiedLesson.id !== lesson.id) return modifiedLesson;
+							return { ...modifiedLesson, slots_available: modifiedLesson.slots_available + 1 };
+						};
+						this.lessons = this.lessons.map(modifyLessonFunction);
+						this.displayedLessons = this.displayedLessons.map(modifyLessonFunction);
+						this.searchedLessons = this.searchedLessons.map(modifyLessonFunction);
+
+						const indexToBeRemoved = this.cart.findIndex((cartItem) => cartItem.id === lesson.id);
+						this.cart.splice(indexToBeRemoved, 1);
+						if (!this.cart.length && this.showCheckoutPage) {
+							this.showCheckoutPage = false;
+						}
+					},
+
+					removeAllFromCart(lesson) {
+						// Remove all occurrences of the item, no matter how many
+						const categorizedLesson = this.categorizedCartItems.find((item) => item.id === lesson.id);
+						const quantity = categorizedLesson.quantity || 0;
+
+						const modifyLessonFunction = (modifiedLesson) => {
+							if (modifiedLesson.id !== lesson.id) return modifiedLesson;
+							return { ...modifiedLesson, slots_available: modifiedLesson.slots_available + quantity };
+						};
+
+						this.lessons = this.lessons.map(modifyLessonFunction);
+						this.displayedLessons = this.displayedLessons.map(modifyLessonFunction);
+						this.searchedLessons = this.searchedLessons.map(modifyLessonFunction);
+
+						this.cart = this.cart.filter((cartItem) => cartItem.id !== lesson.id);
+						if (!this.cart.length && this.showCheckoutPage) {
+							this.showCheckoutPage = false;
+						}
 					},
 
 					checkoutCart() {
@@ -390,11 +476,36 @@
 						this.showCheckoutPage = false;
 						// TODO: Actually check out the cart (i.e. send requests to backend to create order, reduce slots, etc. and don't end with alerts lol)
 					},
+
+					toggleCheckoutPage() {
+						this.showCheckoutPage = !this.showCheckoutPage;
+					},
 				},
 				computed: {
 					// formatSortBy() {
 					// 	return new String(this.sortBy.charAt(0).toUpperCase() + this.sortBy.substring(1).toLowerCase());
 					// },
+					categorizedCartItems() {
+						const cart = [...this.cart];
+						const categorizedCart = [];
+
+						cart.forEach((item) => {
+							const existingIndex = categorizedCart.findIndex((lesson) => lesson.id === item.id);
+							if (existingIndex !== -1) {
+								const quantity = categorizedCart[existingIndex].quantity;
+								categorizedCart[existingIndex] = { ...categorizedCart[existingIndex], quantity: quantity + 1 };
+							} else {
+								categorizedCart.push({ ...item, quantity: 1 });
+							}
+
+							// console.log("Categorized cart after iteration:");
+							// console.log(categorizedCart);
+						});
+
+						// console.log("Categorized cart items after it all:");
+						// console.log(categorizedCart);
+						return categorizedCart;
+					},
 				},
 				created() {
 					this.fetchLessons();
