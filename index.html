@@ -8,203 +8,205 @@
 		<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 		<title>After Lessons</title>
 	</head>
-	<body class="flex flex-col items-center h-[100vh] py-1/20" id="body">
-		<nav class="sticky top-0 flex items-center justify-between px-8 py-6 w-full rounded-xl bg-white shadow-md/30 z-25">
-			<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
-			<button
-				id="view-cart"
-				class="px-4 py-2 bg-blue-600 text-white text-lg rounded-lg cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
-				:disabled="cart.length < 1"
-				@click="toggleCheckoutPage">
-				<span class="mr-2">View Cart</span>
-				<span class="relative">
-					<i class="fa fa-shopping-cart fa-lg"></i>
-					<span
-						v-if="cart.length"
-						id="badge"
-						class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/4 w-4.5 h-4.5 text-[0.675rem] rounded-full bg-red-500">
-						{{ cart.length }}
-					</span>
-				</span>
-			</button>
-		</nav>
-		<div id="container" class="flex-1 flex flex-col justify-center items-center gap-y-10 w-[80vw] py-12">
-			<main v-if="!showCheckoutPage" class="flex flex-col gap-y-8 w-[80vw]">
-				<div class="searchbar relative flex items-center gap-1">
-					<label for="search-input" class="absolute left-5 top-1/2 -translate-y-1/2">
-						<i class="fa fa-search fa-lg"></i>
-					</label>
-					<input
-						type="text"
-						name="search"
-						v-model="searchQuery"
-						id="search-input"
-						placeholder="Search for lessons..."
-						@input="submitSearch"
-						class="search-input w-full h-full px-12 py-4 border-2 border-black outline-blue-600 rounded-4xl focus:outline-2" />
-					<button
-						class="clear-search absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer transition-color duration-300 hover:text-gray-500"
-						@click="clearSearch">
-						<i class="fa fa-times-circle fa-lg"></i>
-					</button>
-				</div>
-
-				<div class="filter-section flex gap-3 justify-end">
-					<div v-if="sortBy && sortBy !== 'none'" class="chosen-filter flex items-center px-4 py-2 rounded-4xl bg-blue-200">
-						<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
-							<span class="absolute -top-1 left-0">×</span>
-						</button>
-						<span class="ml-2 text-blue-600">{{ formatSortBy(sortBy) }}</span>
-					</div>
-					<div class="filter-container relative">
-						<button id="filter-btn" class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
-							<i class="fa fa-sliders"></i>
-							<span class="ml-2">Filter</span>
-						</button>
-						<div
-							id="filter-dropdown"
-							class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left"
-							:class="{'hidden': !shouldShowFilterDropdown}">
-							<h3 class="mb-4 text-xl font-semibold">Filter By:</h3>
-							<ol>
-								<li
-									v-for="sortByOption of sortByOptions"
-									class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50 border-l-7 cursor-pointer"
-									:class="{'border-l-blue-400': filterIsSelected(sortByOption), 'border-l-transparent': !filterIsSelected(sortByOption)}"
-									@click="() => selectFilter(sortByOption)">
-									{{ formatSortBy(sortByOption) }}
-								</li>
-							</ol>
-						</div>
-					</div>
-					<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
-						<span class="text-sm">
-							<i :class="'fa fa-sort-amount-' + sortDirection"></i>
+	<body>
+		<div id="app" class="flex flex-col items-center h-[100vh] py-1/20">
+			<nav class="sticky top-0 flex items-center justify-between px-8 py-6 w-full rounded-xl bg-white shadow-md/30 z-25">
+				<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
+				<button
+					id="view-cart"
+					class="px-4 py-2 bg-blue-600 text-white text-lg rounded-lg cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+					:disabled="cart.length < 1"
+					@click="toggleCheckoutPage">
+					<span class="mr-2">View Cart</span>
+					<span class="relative">
+						<i class="fa fa-shopping-cart fa-lg"></i>
+						<span
+							v-if="cart.length"
+							id="badge"
+							class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/4 w-4.5 h-4.5 text-[0.675rem] rounded-full bg-red-500">
+							{{ cart.length }}
 						</span>
-						<span class="ml-2">{{ sortDirection === 'asc' ? 'Ascending' : 'Descending' }}</span>
-					</button>
-				</div>
+					</span>
+				</button>
+			</nav>
+			<div id="container" class="flex-1 flex flex-col justify-center items-center gap-y-10 w-[80vw] py-12">
+				<main v-if="!showCheckoutPage" class="flex flex-col gap-y-8 w-[80vw]">
+					<div class="searchbar relative flex items-center gap-1">
+						<label for="search-input" class="absolute left-5 top-1/2 -translate-y-1/2">
+							<i class="fa fa-search fa-lg"></i>
+						</label>
+						<input
+							type="text"
+							name="search"
+							v-model="searchQuery"
+							id="search-input"
+							placeholder="Search for lessons..."
+							@input="submitSearch"
+							class="search-input w-full h-full px-12 py-4 border-2 border-black outline-blue-600 rounded-4xl focus:outline-2" />
+						<button
+							class="clear-search absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer transition-color duration-300 hover:text-gray-500"
+							@click="clearSearch">
+							<i class="fa fa-times-circle fa-lg"></i>
+						</button>
+					</div>
 
-				<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl">
-					<div
-						v-for="lesson in displayedLessons"
-						class="lesson group relative top-0 flex flex-col w-fit rounded-xl overflow-hidden shadow-lg/30 transition-[top] duration-300 ease-in-out hover:-top-0">
-						<div class="top bg-cyan-500 h-full">
-							<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
-								<img
-									:src="lesson.image.url"
-									:alt="lesson.image.alt"
-									class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-							</figure>
-						</div>
-						<div class="bottom relative flex flex-col gap-2 px-5 py-5">
-							<h1 class="text-xl font-semibold">{{ lesson.subject }}</h1>
-							<p>{{ lesson.location }}</p>
-							<p>${{ lesson.price }}</p>
-							<p>{{ lesson.slots_available }} slots left</p>
-							<button
-								class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-150 hover:border-blue-600 hover:bg-blue-600 hover:text-white disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
-								:disabled="lesson.slots_available <= 0"
-								@click="addToCart(lesson)">
-								<i class="fa fa-cart-plus fa-lg"></i>
+					<div class="filter-section flex gap-3 justify-end">
+						<div v-if="sortBy && sortBy !== 'none'" class="chosen-filter flex items-center px-4 py-2 rounded-4xl bg-blue-200">
+							<button class="relative w-4 h-4 text-2xl text-blue-600 leading-[.9] cursor-pointer" @click="clearFilter">
+								<span class="absolute -top-1 left-0">×</span>
 							</button>
-							<!-- <p>{{ lesson.price }}</p> -->
+							<span class="ml-2 text-blue-600">{{ formatSortBy(sortBy) }}</span>
+						</div>
+						<div class="filter-container relative">
+							<button id="filter-btn" class="filter relative px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="toggleFilterDropdown">
+								<i class="fa fa-sliders"></i>
+								<span class="ml-2">Filter</span>
+							</button>
+							<div
+								id="filter-dropdown"
+								class="filter-dropdown absolute top-5/4 right-0 py-4 px-4 w-4/2 rounded-3xl shadow-md/70 bg-white z-20 text-left"
+								:class="{'hidden': !shouldShowFilterDropdown}">
+								<h3 class="mb-4 text-xl font-semibold">Filter By:</h3>
+								<ol>
+									<li
+										v-for="sortByOption of sortByOptions"
+										class="relative px-2 py-1 rounded-lg hover:bg-gray-400/50 border-l-7 cursor-pointer"
+										:class="{'border-l-blue-400': filterIsSelected(sortByOption), 'border-l-transparent': !filterIsSelected(sortByOption)}"
+										@click="() => selectFilter(sortByOption)">
+										{{ formatSortBy(sortByOption) }}
+									</li>
+								</ol>
+							</div>
+						</div>
+						<button class="sort px-4 py-2 bg-gray-200 rounded-sm cursor-pointer" @click="changeSortDirection">
+							<span class="text-sm">
+								<i :class="'fa fa-sort-amount-' + sortDirection"></i>
+							</span>
+							<span class="ml-2">{{ sortDirection === 'asc' ? 'Ascending' : 'Descending' }}</span>
+						</button>
+					</div>
+
+					<div class="lessons-container grid grid-cols-4 gap-4 rounded-xl">
+						<div
+							v-for="lesson in displayedLessons"
+							class="lesson group relative top-0 flex flex-col w-fit rounded-xl overflow-hidden shadow-lg/30 transition-[top] duration-300 ease-in-out hover:-top-0">
+							<div class="top bg-cyan-500 h-full">
+								<figure class="image relative w-full h-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
+									<img
+										:src="lesson.image.url"
+										:alt="lesson.image.alt"
+										class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+								</figure>
+							</div>
+							<div class="bottom relative flex flex-col gap-2 px-5 py-5">
+								<h1 class="text-xl font-semibold">{{ lesson.subject }}</h1>
+								<p>{{ lesson.location }}</p>
+								<p>${{ lesson.price }}</p>
+								<p>{{ lesson.slots_available }} slots left</p>
+								<button
+									class="add-to-cart absolute bottom-4 right-4 px-3 py-2 border cursor-pointer rounded-lg duration-150 hover:border-blue-600 hover:bg-blue-600 hover:text-white disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+									:disabled="lesson.slots_available <= 0"
+									@click="addToCart(lesson)">
+									<i class="fa fa-cart-plus fa-lg"></i>
+								</button>
+								<!-- <p>{{ lesson.price }}</p> -->
+							</div>
 						</div>
 					</div>
-				</div>
-			</main>
+				</main>
 
-			<aside v-else class="flex flex-col gap-y-8 w-[80vw]">
-				<h1 class="text-2xl font-semibold">Cart:</h1>
+				<aside v-else class="flex flex-col gap-y-8 w-[80vw]">
+					<h1 class="text-2xl font-semibold">Cart:</h1>
 
-				<div id="cart" class="flex flex-col gap-y-6">
-					<div v-for="item in categorizedCartItems" id="cart-item" class="flex rounded-xl overflow-hidden shadow-sm/40">
-						<div class="left flex-1 min-w-0">
-							<figure class="image relative h-full w-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
-								<img
-									:src="item.image.url"
-									:alt="item.image.alt"
-									class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
-							</figure>
-						</div>
-						<div class="right flex justify-between items-center px-4 py-2 w-9/10">
-							<div class="details flex flex-col">
-								<h1 class="font-semibold text-lg">{{ item.subject }}</h1>
-								<span>{{ item.location }}</span>
-								<span>${{ item.price }}</span>
+					<div id="cart" class="flex flex-col gap-y-6">
+						<div v-for="item in categorizedCartItems" id="cart-item" class="flex rounded-xl overflow-hidden shadow-sm/40">
+							<div class="left flex-1 min-w-0">
+								<figure class="image relative h-full w-full overflow-hidden before:absolute before:inset-0 before:bg-black/35 before:z-10">
+									<img
+										:src="item.image.url"
+										:alt="item.image.alt"
+										class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+								</figure>
 							</div>
-							<div class="action-container flex gap-8">
-								<div class="quantity-container flex gap-4">
-									<button
-										class="minus text-red-600 cursor-pointer hover:text-red-500 disabled:text-gray-400 disabled:cursor-default"
-										@click="removeFromCart(item)">
-										<!-- <span>−</span> -->
-										<i class="fa fa-minus-circle fa-2x"></i>
-									</button>
-									<div class="quantity py-2 w-30 text-center text-xl text-gray-700 rounded-lg bg-gray-300 border-1 border-dashed">
-										{{ item.quantity }}
+							<div class="right flex justify-between items-center px-4 py-2 w-9/10">
+								<div class="details flex flex-col">
+									<h1 class="font-semibold text-lg">{{ item.subject }}</h1>
+									<span>{{ item.location }}</span>
+									<span>${{ item.price }}</span>
+								</div>
+								<div class="action-container flex gap-8">
+									<div class="quantity-container flex gap-4">
+										<button
+											class="minus text-red-600 cursor-pointer hover:text-red-500 disabled:text-gray-400 disabled:cursor-default"
+											@click="removeFromCart(item)">
+											<!-- <span>−</span> -->
+											<i class="fa fa-minus-circle fa-2x"></i>
+										</button>
+										<div class="quantity py-2 w-30 text-center text-xl text-gray-700 rounded-lg bg-gray-300 border-1 border-dashed">
+											{{ item.quantity }}
+										</div>
+										<button
+											class="plus text-blue-600 cursor-pointer hover:text-blue-500 disabled:text-gray-400 disabled:cursor-default"
+											@click="addToCart(item)"
+											:disabled="!canAddToCart(item)">
+											<!-- <span>+</span> -->
+											<i class="fa fa-plus-circle fa-2x"></i>
+										</button>
 									</div>
-									<button
-										class="plus text-blue-600 cursor-pointer hover:text-blue-500 disabled:text-gray-400 disabled:cursor-default"
-										@click="addToCart(item)"
-										:disabled="!canAddToCart(item)">
-										<!-- <span>+</span> -->
-										<i class="fa fa-plus-circle fa-2x"></i>
+									<button class="trash text-gray-400 cursor-pointer duration-300 hover:text-gray-500" @click="removeAllFromCart(item)">
+										<i class="fa fa-trash fa-2x"></i>
 									</button>
 								</div>
-								<button class="trash text-gray-400 cursor-pointer duration-300 hover:text-gray-500" @click="removeAllFromCart(item)">
-									<i class="fa fa-trash fa-2x"></i>
-								</button>
 							</div>
 						</div>
 					</div>
-				</div>
 
-				<form action="" id="checkout-form" class="px-8 pt-8 pb-10 rounded-xl shadow-md/50">
-					<h2 class="text-2xl font-semibold mb-12">Checkout</h2>
-					<div class="entry-container flex flex-col gap-y-4 px-6">
-						<div class="entry flex flex-col gap-y-1">
-							<label for="name-input" class="font-semibold text-sm">Name</label>
-							<input
-								v-model="name"
-								id="name-input"
-								type="text"
-								aria-invalid="true"
-								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic invalid:border-red-500 focus:invalid:outline-red-500"
-								pattern="[A-Za-z\s]+"
-								placeholder="Enter a valid name, e.g. John Doe" />
-							<span class="text-red-500 text-sm font-semibold" :class="{'invisible': !(this.name && !this.isNameValid)}">
-								Name must be letters only
-							</span>
-						</div>
-						<div class="entry flex flex-col gap-y-1">
-							<label for="phone-input" class="font-semibold text-sm">Phone number</label>
-							<input
-								v-model="phone_num"
-								id="phone-input"
-								type="text"
-								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic invalid:border-red-500 focus:invalid:outline-red-500"
-								pattern="[0-9]+"
-								placeholder="Enter a valid phone number, e.g. 50055115" />
-							<span class="text-red-500 text-sm font-semibold" :class="{'invisible': !(this.phone_num && !this.isPhoneValid)}">
-								Phone must be numbers only
-							</span>
-						</div>
-						<!-- <div class="entry flex flex-col gap-y-1">
+					<form action="" id="checkout-form" class="px-8 pt-8 pb-10 rounded-xl shadow-md/50">
+						<h2 class="text-2xl font-semibold mb-12">Checkout</h2>
+						<div class="entry-container flex flex-col gap-y-4 px-6">
+							<div class="entry flex flex-col gap-y-1">
+								<label for="name-input" class="font-semibold text-sm">Name</label>
+								<input
+									v-model="name"
+									id="name-input"
+									type="text"
+									aria-invalid="true"
+									class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic invalid:border-red-500 focus:invalid:outline-red-500"
+									pattern="[A-Za-z\s]+"
+									placeholder="Enter a valid name, e.g. John Doe" />
+								<span class="text-red-500 text-sm font-semibold" :class="{'invisible': !(this.name && !this.isNameValid)}">
+									Name must be letters only
+								</span>
+							</div>
+							<div class="entry flex flex-col gap-y-1">
+								<label for="phone-input" class="font-semibold text-sm">Phone number</label>
+								<input
+									v-model="phone_num"
+									id="phone-input"
+									type="text"
+									class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic invalid:border-red-500 focus:invalid:outline-red-500"
+									pattern="[0-9]+"
+									placeholder="Enter a valid phone number, e.g. 50055115" />
+								<span class="text-red-500 text-sm font-semibold" :class="{'invisible': !(this.phone_num && !this.isPhoneValid)}">
+									Phone must be numbers only
+								</span>
+							</div>
+							<!-- <div class="entry flex flex-col gap-y-1">
 							<label for="" class="font-semibold text-sm"></label><input type="text" class="px-6 py-4 rounded-xl border-1 outline-2" />
 						</div>
 						<div class="entry flex flex-col gap-y-1">
 							<label for="" class="font-semibold text-sm"></label><input type="text" class="px-6 py-4 rounded-xl border-1 outline-2" />
 						</div> -->
-						<button
-							class="px-4 py-2 w-fit bg-blue-600 rounded-lg text-white cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
-							@click="checkoutCart"
-							:disabled="!canCheckoutCart">
-							Checkout
-						</button>
-					</div>
-				</form>
-			</aside>
+							<button
+								class="px-4 py-2 w-fit bg-blue-600 rounded-lg text-white cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+								@click="checkoutCart"
+								:disabled="!canCheckoutCart">
+								Checkout
+							</button>
+						</div>
+					</form>
+				</aside>
+			</div>
 		</div>
 
 		<script>
@@ -539,7 +541,7 @@
 				},
 			});
 
-			app.mount("#body");
+			app.mount("#app");
 		</script>
 	</body>
 </html>
