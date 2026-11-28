@@ -9,7 +9,7 @@
 		<title>After Lessons</title>
 	</head>
 	<body class="flex flex-col items-center h-[100vh] py-1/20" id="body">
-		<nav class="sticky top-0 flex items-center justify-between px-6 py-6 w-full rounded-xl bg-white shadow-md/30 z-25">
+		<nav class="sticky top-0 flex items-center justify-between px-8 py-6 w-full rounded-xl bg-white shadow-md/30 z-25">
 			<h1 class="text-3xl font-bold text-blue-600 text-center">{{ message }}</h1>
 			<button
 				id="view-cart"
@@ -162,22 +162,33 @@
 
 				<form action="" id="checkout-form" class="px-8 pt-8 pb-10 rounded-xl shadow-md/50">
 					<h2 class="text-2xl font-semibold mb-12">Checkout</h2>
-					<div class="entry-container flex flex-col gap-y-6 px-6">
+					<div class="entry-container flex flex-col gap-y-4 px-6">
 						<div class="entry flex flex-col gap-y-1">
 							<label for="name-input" class="font-semibold text-sm">Name</label>
 							<input
+								v-model="name"
 								id="name-input"
 								type="text"
-								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic"
+								aria-invalid="true"
+								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic invalid:border-red-500 focus:invalid:outline-red-500"
+								pattern="[A-Za-z\s]+"
 								placeholder="Enter a valid name, e.g. John Doe" />
+							<span class="text-red-500 text-sm font-semibold" :class="{'invisible': !(this.name && !this.isNameValid)}">
+								Name must be letters only
+							</span>
 						</div>
 						<div class="entry flex flex-col gap-y-1">
 							<label for="phone-input" class="font-semibold text-sm">Phone number</label>
 							<input
+								v-model="phone_num"
 								id="phone-input"
-								type="number"
-								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic"
+								type="text"
+								class="px-6 py-4 rounded-xl border-1 focus:outline-2 placeholder:italic invalid:border-red-500 focus:invalid:outline-red-500"
+								pattern="[0-9]+"
 								placeholder="Enter a valid phone number, e.g. 50055115" />
+							<span class="text-red-500 text-sm font-semibold" :class="{'invisible': !(this.phone_num && !this.isPhoneValid)}">
+								Phone must be numbers only
+							</span>
 						</div>
 						<!-- <div class="entry flex flex-col gap-y-1">
 							<label for="" class="font-semibold text-sm"></label><input type="text" class="px-6 py-4 rounded-xl border-1 outline-2" />
@@ -185,7 +196,10 @@
 						<div class="entry flex flex-col gap-y-1">
 							<label for="" class="font-semibold text-sm"></label><input type="text" class="px-6 py-4 rounded-xl border-1 outline-2" />
 						</div> -->
-						<button class="px-4 py-2 w-fit bg-blue-600 rounded-lg text-white cursor-pointer hover:bg-blue-500" @click="checkoutCart">
+						<button
+							class="px-4 py-2 w-fit bg-blue-600 rounded-lg text-white cursor-pointer hover:bg-blue-500 disabled:bg-gray-400 disabled:border-transparent disabled:text-black disabled:cursor-default"
+							@click="checkoutCart"
+							:disabled="!canCheckoutCart">
 							Checkout
 						</button>
 					</div>
@@ -212,6 +226,8 @@
 						sortByOptions: ["subject", "location", "price", "slot_availability"],
 						shouldShowFilterDropdown: false,
 						showCheckoutPage: false,
+						name: "",
+						phone_num: "",
 					};
 				},
 				methods: {
@@ -411,8 +427,6 @@
 						return sortByModified;
 					},
 
-					removeItemFromLessons(item) {},
-
 					canAddToCart(item) {
 						const categorizedItem = this.categorizedCartItems.find((cartItem) => cartItem.id === item.id);
 						if (categorizedItem) {
@@ -504,6 +518,20 @@
 						// console.log("Categorized cart items after it all:");
 						// console.log(categorizedCart);
 						return categorizedCart;
+					},
+
+					isNameValid() {
+						const lettersOnlyRegex = /^[A-Za-z\s]+$/;
+						return lettersOnlyRegex.test(this.name);
+					},
+
+					isPhoneValid() {
+						const numbersOnlyRegex = /^[0-9]+$/;
+						return numbersOnlyRegex.test(this.phone_num);
+					},
+
+					canCheckoutCart() {
+						return this.isNameValid && this.isPhoneValid;
 					},
 				},
 				created() {
